@@ -10,7 +10,7 @@ ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
             "140.113.235.152": "linux2.cs.nycu.edu.tw",
             "140.113.235.153": "linux3.cs.nycu.edu.tw",
             "140.113.235.154": "linux4.cs.nycu.edu.tw"}
-search_port = [12000, 12005]
+search_port = [18000, 18005]
 ipA = "140.113.235.151"
 portA = 12000
 
