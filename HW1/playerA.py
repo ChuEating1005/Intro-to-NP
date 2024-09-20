@@ -26,7 +26,8 @@ def find_available_ports():
                 pass
     for i, port in enumerate(available_ports):
         print(f"{i+1}. Port {port} is available.")
-    portA = int(input("Choose a port to bind: "))
+    select = int(input("Choose a port to bind: "))
+    portA = available_ports[select-1]
     return portA
 
 def send_invitation(udpclient_socket):
