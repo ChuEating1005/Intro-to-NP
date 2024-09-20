@@ -5,6 +5,10 @@ host_ips = {"linux1.cs.nycu.edu.tw": "140.113.235.151",
             "linux2.cs.nycu.edu.tw": "140.113.235.152",
             "linux3.cs.nycu.edu.tw": "140.113.235.153",
             "linux4.cs.nycu.edu.tw": "140.113.235.154"}
+ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
+            "140.113.235.152": "linux2.cs.nycu.edu.tw",
+            "140.113.235.153": "linux3.cs.nycu.edu.tw",
+            "140.113.235.154": "linux4.cs.nycu.edu.tw"}
 ipB = "140.113.235.152"
 portB = 12002
 
@@ -15,8 +19,7 @@ def receive_invitation(udpserver_socket):
     while True:
         # Receive the invitation
         message, client_address = udpserver_socket.recvfrom(1024)
-        host = list(host_ips.keys())[list(host_ips.values()).index(client_address)]
-        print(f"Received invitation:\n### {message.decode()} ###\nfrom {host} on {client_address}")
+        print(f"Received invitation:\n### {message.decode()} ###\nfrom {ip_host[client_address]} on {client_address}")
 
         # Accept the invitation
         response = input("Do you accept the invitation? (Y/N): ").lower()

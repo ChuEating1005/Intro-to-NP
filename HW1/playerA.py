@@ -5,6 +5,11 @@ host_ips = {"linux1.cs.nycu.edu.tw": "140.113.235.151",
             "linux2.cs.nycu.edu.tw": "140.113.235.152",
             "linux3.cs.nycu.edu.tw": "140.113.235.153",
             "linux4.cs.nycu.edu.tw": "140.113.235.154"}
+
+ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
+            "140.113.235.152": "linux2.cs.nycu.edu.tw",
+            "140.113.235.153": "linux3.cs.nycu.edu.tw",
+            "140.113.235.154": "linux4.cs.nycu.edu.tw"}
 search_port = [12000, 12020]
 ipA = "140.113.235.151"
 portA = 12001
@@ -22,9 +27,8 @@ def send_invitation(client_socket):
             try:
                 response, addr = client_socket.recvfrom(1024)
                 if response.decode() == "Accepted":
-                    host = list(host_ips.keys())[list(host_ips.values()).index(ip)]
-                    print(f"{host} accept the invitation, player address: {ip}:{port}")
-                    available_servers.append((host, ip, port))
+                    print(f"{ip_host[ip]} accept the invitation, player address: {ip}:{port}")
+                    available_servers.append((ip_host[ip], ip, port))
             except socket.timeout:
                 pass
 
