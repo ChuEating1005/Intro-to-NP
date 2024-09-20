@@ -15,7 +15,7 @@ def receive_invitation(udpserver_socket):
     while True:
         # Receive the invitation
         message, client_address = udpserver_socket.recvfrom(1024)
-        host = host_ips.keys()[host_ips.values().index(client_address)]
+        host = list(host_ips.keys())[list(host_ips.values()).index(client_address)]
         print(f"Received invitation:\n### {message.decode()} ###\nfrom {host} on {client_address}")
 
         # Accept the invitation

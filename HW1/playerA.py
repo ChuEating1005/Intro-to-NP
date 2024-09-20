@@ -22,7 +22,7 @@ def send_invitation(client_socket):
             try:
                 response, addr = client_socket.recvfrom(1024)
                 if response.decode() == "Accepted":
-                    host = host_ips.keys()[host_ips.values().index(ip)]
+                    host = list(host_ips.keys())[list(host_ips.values()).index(ip)]
                     print(f"{host} accept the invitation, player address: {ip}:{port}")
                     available_servers.append((host, ip, port))
             except socket.timeout:
