@@ -10,9 +10,9 @@ ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
             "140.113.235.152": "linux2.cs.nycu.edu.tw",
             "140.113.235.153": "linux3.cs.nycu.edu.tw",
             "140.113.235.154": "linux4.cs.nycu.edu.tw"}
-search_port = [12000, 12020]
+search_port = [12000, 12005]
 ipA = "140.113.235.151"
-portA = 12001
+portA = 12000
 
 def send_invitation(udpclient_socket):
     
@@ -40,8 +40,8 @@ def choose_server(available_servers):
         return None
     else:
         print("Choose a player to play the game.")
-        for i, host, ip, port in enumerate(available_servers):
-            print(f"{i+1}. {host} on {ip}:{port}")
+        for i, server in enumerate(available_servers):
+            print(f"{i+1}. {server[0]} on {server[1]}:{server[2]}")
         choice = int(input("Enter the number of the player: "))
         return available_servers[choice-1]
     
