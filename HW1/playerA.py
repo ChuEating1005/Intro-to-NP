@@ -88,7 +88,7 @@ def main():
     conn, addr = tcpserver_socket.accept()
     print(f"Player B has joined the game!")
 
-    start_game(conn, playerB_server[1], playerB_server[2])
+    start_game(conn)
     conn.close()
     udpclient_socket.close()
     tcpserver_socket.close()

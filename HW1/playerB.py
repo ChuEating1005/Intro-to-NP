@@ -71,7 +71,7 @@ def main():
 
     tcpclient_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcpclient_socket.connect((ipA, portA))
-    play_game(tcpclient_socket, ipA, portA)
+    play_game(tcpclient_socket)
     tcpclient_socket.close()
 
 if __name__ == "__main__":
