@@ -63,7 +63,7 @@ def play_game(tcpclient_socket):
 
 def main():
     udpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udpserver_socket.bind((ipB, portB))
+    udpserver_socket.bind((ipB, portB-1))
 
     receive_invitation(udpserver_socket)
     ipA, portA = receive_portinfo(udpserver_socket)
