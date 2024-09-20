@@ -52,9 +52,9 @@ def play_game(tcpclient_socket):
         if playerA_move == playerB_move:
             print("It's a tie!, play again")
             continue
-        elif (playerA_move == 'rock' and playerB_move == 'scissors') or \
-            (playerA_move == 'scissors' and playerB_move == 'paper') or \
-            (playerA_move == 'paper' and playerB_move == 'rock'):
+        elif (playerB_move == 'rock' and playerA_move == 'scissors') or \
+            (playerB_move == 'scissors' and playerA_move == 'paper') or \
+            (playerB_move == 'paper' and playerA_move == 'rock'):
             print("You win! Congratulations!")
             break
         else:
