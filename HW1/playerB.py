@@ -1,10 +1,10 @@
 # Server Side (Player B), Receive Invitation
 import socket
 
-host_ips = {"linux1.cs.nycu.edu.tw": "140.113.235.151", 
-            "linux2.cs.nycu.edu.tw": "140.113.235.152",
-            "linux3.cs.nycu.edu.tw": "140.113.235.153",
-            "linux4.cs.nycu.edu.tw": "140.113.235.154"}
+host_ips = {"linux1.cs.nctu.edu.tw": "140.113.235.151", 
+            "linux2.cs.nctu.edu.tw": "140.113.235.152",
+            "linux3.cs.nctu.edu.tw": "140.113.235.153",
+            "linux4.cs.nctu.edu.tw": "140.113.235.154"}
 ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
             "140.113.235.152": "linux2.cs.nycu.edu.tw",
             "140.113.235.153": "linux3.cs.nycu.edu.tw",
