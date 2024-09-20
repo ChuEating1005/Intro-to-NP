@@ -78,6 +78,8 @@ def main():
     available_udpservers = send_invitation(udpclient_socket)
     playerB_server = choose_server(available_udpservers)
 
+    send_portinfo(udpclient_socket, playerB_server[1], playerB_server[2])
+
     udpclient_socket.close()
 
     tcpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
