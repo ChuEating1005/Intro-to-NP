@@ -46,7 +46,7 @@ def choose_server(available_servers):
         return available_servers[choice-1]
     
 def send_portinfo(udpclient_socket, ipB, portB):
-    message = ipA + ', ' + str(portA)
+    message = ipA + ', ' + str(portA+1)
     print(f"Send address to Player B: {message}")
     udpclient_socket.sendto(message.encode(), (ipB, portB))
 
