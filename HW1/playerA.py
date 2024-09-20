@@ -10,7 +10,7 @@ ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
             "140.113.235.152": "linux2.cs.nycu.edu.tw",
             "140.113.235.153": "linux3.cs.nycu.edu.tw",
             "140.113.235.154": "linux4.cs.nycu.edu.tw"}
-search_port = [18000, 18005]
+search_port = [18001, 18005]
 ipA = "140.113.235.151"
 portA = 18000
 
@@ -24,13 +24,14 @@ def send_invitation(udpclient_socket):
     for ip in host_ips.values():
         for port in range(search_port[0], search_port[1]+1):
             udpclient_socket.sendto(message.encode(), (ip, port))
-            try:
-                response, udpserver_addr = udpclient_socket.recvfrom(1024)
-                if response.decode() == "Accepted":
-                    print(f"{ip_host[ip]} accept the invitation, player address: {ip}:{port}")
-                    available_servers.append((ip_host[ip], ip, port))
-            except socket.timeout:
-                pass
+        try:
+            response, udpserver_addr = udpclient_socket.recvfrom(1024)
+            ipB, portB = udpserver_addr[0], udpserver_addr[1]
+            if response.decode() == "Accepted":
+                print(f"{ip_host[ipB]} accept the invitation, player address: {ipB}:{portB}")
+                available_servers.append((ip_host[ipB], ipB, portB))
+        except socket.timeout:
+            pass
 
     return available_servers
 
