@@ -45,8 +45,10 @@ def choose_server(available_servers):
         choice = int(input("Enter the number of the player: "))
         return available_servers[choice-1]
     
-def send_portinfo(client_socket, ipB, portB):
-    client_socket.sendto(f"{ipA}, {portA}".encode(), (ipB, portB))
+def send_portinfo(udpclient_socket, ipB, portB):
+    message = ipA + ', ' + str(portA)
+    print(f"Send address to Player B: {message}")
+    udpclient_socket.sendto(message.encode(), (ipB, portB))
 
 def start_game(conn):
     # TCP connection to play Rock-Paper-Scissors

@@ -10,7 +10,7 @@ ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
             "140.113.235.153": "linux3.cs.nycu.edu.tw",
             "140.113.235.154": "linux4.cs.nycu.edu.tw"}
 ipB = "140.113.235.152"
-portB = 12003
+portB = 12004
 
 
 def receive_invitation(udpserver_socket):
@@ -63,7 +63,7 @@ def play_game(tcpclient_socket):
 
 def main():
     udpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udpserver_socket.bind((ipB, portB-1))
+    udpserver_socket.bind((ipB, portB))
 
     receive_invitation(udpserver_socket)
     ipA, portA = receive_portinfo(udpserver_socket)
