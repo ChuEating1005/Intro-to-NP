@@ -18,18 +18,19 @@ def receive_invitation(udpserver_socket):
 
     while True:
         # Receive the invitation
-        message, client_address = udpserver_socket.recvfrom(1024)
-        print(f"Received invitation:\n### {message.decode()} ###\nfrom {ip_host[client_address]} on {client_address}")
+        message, udpclient_address = udpserver_socket.recvfrom(1024)
+        ipA = udpclient_address[0]
+        print(f"Received invitation:\n### {message.decode()} ###\nfrom {ip_host[ipA]} on {ipA}")
 
         # Accept the invitation
         response = input("Do you accept the invitation? (Y/N): ").lower()
         if response == 'y':
             response = "Accepted"
-            udpserver_socket.sendto(response.encode(), client_address)
+            udpserver_socket.sendto(response.encode(), udpclient_address)
             break
         else:
             response = "Declined"
-            udpserver_socket.sendto(response.encode(), client_address)
+            udpserver_socket.sendto(response.encode(), udpclient_address)
             continue
 
 def receive_portinfo(udpserver_socket):
@@ -39,12 +40,12 @@ def receive_portinfo(udpserver_socket):
     print(f"Received player A's address: {ipA}:{portA}")
     return ipA, portA
 
-def play_game(client_socket):
+def play_game(tcpclient_socket):
     # TCP connection to play Rock-Paper-Scissors
     while True:
         playerB_move = input("Enter your move (rock/paper/scissors): ").lower()
-        client_socket.send(playerB_move.encode())
-        playerA_move = client_socket.recv(1024).decode()
+        tcpclient_socket.send(playerB_move.encode())
+        playerA_move = tcpclient_socket.recv(1024).decode()
 
         print(f"Player A played: {playerA_move}")
 
@@ -61,15 +62,17 @@ def play_game(client_socket):
             break
 
 def main():
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_socket.bind((ipB, portB))
+    udpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udpserver_socket.bind((ipB, portB))
 
-    receive_invitation(server_socket)
-    ipA, portA = receive_portinfo(server_socket)
+    receive_invitation(udpserver_socket)
+    ipA, portA = receive_portinfo(udpserver_socket)
+    udpserver_socket.close()
 
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((ipA, portA))
-    play_game(client_socket, ipA, portA)
+    tcpclient_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcpclient_socket.connect((ipA, portA))
+    play_game(tcpclient_socket, ipA, portA)
+    tcpclient_socket.close()
 
 if __name__ == "__main__":
     main()

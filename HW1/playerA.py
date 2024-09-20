@@ -14,7 +14,7 @@ search_port = [12000, 12020]
 ipA = "140.113.235.151"
 portA = 12001
 
-def send_invitation(client_socket):
+def send_invitation(udpclient_socket):
     
     print("Search for waiting players...")
     
@@ -23,9 +23,9 @@ def send_invitation(client_socket):
 
     for ip in host_ips:
         for port in range(search_port[0], search_port[1]+1):
-            client_socket.sendto(message.encode(), (ip, port))
+            udpclient_socket.sendto(message.encode(), (ip, port))
             try:
-                response, addr = client_socket.recvfrom(1024)
+                response, udpserver_addr = udpclient_socket.recvfrom(1024)
                 if response.decode() == "Accepted":
                     print(f"{ip_host[ip]} accept the invitation, player address: {ip}:{port}")
                     available_servers.append((ip_host[ip], ip, port))
@@ -72,23 +72,25 @@ def start_game(conn):
 
 def main():
 
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client_socket.settimeout(1)
+    udpclient_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udpclient_socket.settimeout(1)
 
-    available_servers = send_invitation(client_socket)
-    server = choose_server(available_servers)
+    available_udpservers = send_invitation(udpclient_socket)
+    playerB_server = choose_server(available_udpservers)
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((ipA, portA))
-    server_socket.listen(1)
+    udpclient_socket.close()
+
+    tcpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcpserver_socket.bind((ipA, portA))
+    tcpserver_socket.listen(1)
     print("Waiting for player B to join the game...")
 
-    conn, addr = server_socket.accept()
+    conn, addr = tcpserver_socket.accept()
     print(f"Player B has joined the game!")
 
-    start_game(conn, server[1], server[2])
+    start_game(conn, playerB_server[1], playerB_server[2])
     conn.close()
-    server_socket.close()
+    tcpserver_socket.close()
 
 if __name__ == "__main__":
     main()
