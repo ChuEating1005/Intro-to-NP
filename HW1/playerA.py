@@ -1,5 +1,7 @@
 # Clinet Side (Player A), Send Invitation
 import socket
+from colorama import init
+from termcolor import colored
 
 host_ips = {"linux1.cs.nycu.edu.tw": "140.113.235.151", 
             "linux2.cs.nycu.edu.tw": "140.113.235.152",
@@ -53,13 +55,40 @@ def send_portinfo(udpclient_socket, ipB, portB):
 
 def start_game(conn):
     # TCP connection to play Rock-Paper-Scissors
+    move = ["rock", "paper", "scissors"]
+    print_imgage = {
+    "rock" : """
+        _______
+    ---'   ____)
+        (_____)
+        (_____)
+        (____)
+    ---.__(___)
+    """,
+    "paper" : """
+        _______
+    ---'    ____)____
+            ______)
+            _______)
+            _______)
+    ---.__________)
+    """,
+    "scissors" : """
+        _______
+    ---'   ____)____
+            ______)
+        __________)
+        (____)
+    ---.__(___)
+    """}
     while True:
-        
         playerB_move = conn.recv(1024).decode()
-        playerA_move = input("Enter your move (rock/paper/scissors): ").lower()
+        select = int(input("Enter your move (1. rock / 2. paper / 3. scissors): ").lower())
+        playerA_move = move[select-1]
+        print(colored(f"You played: {print_imgage[playerA_move]}"), "green")
         conn.send(playerA_move.encode())
 
-        print(f"Player B played: {playerB_move}")
+        print(colored(f"Opponent played: {print_imgage[playerB_move]}"), "red")
 
         if playerA_move == playerB_move:
             print("It's a tie!, play again")
@@ -74,6 +103,7 @@ def start_game(conn):
             break
 
 def main():
+    init()
     udpclient_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpclient_socket.settimeout(5)
 

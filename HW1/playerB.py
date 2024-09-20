@@ -1,5 +1,7 @@
 # Server Side (Player B), Receive Invitation
 import socket
+from colorama import init
+from termcolor import colored
 
 host_ips = {"linux1.cs.nctu.edu.tw": "140.113.235.151", 
             "linux2.cs.nctu.edu.tw": "140.113.235.152",
@@ -34,7 +36,8 @@ def receive_invitation(udpserver_socket):
         # Receive the invitation
         message, udpclient_address = udpserver_socket.recvfrom(1024)
         ipA = udpclient_address[0]
-        print(f"Received invitation:\n### {message.decode()} ###\nfrom {ip_host[ipA]} on {ipA}")
+        print(f"Received invitation from {ip_host[ipA]} on {ipA}: ")
+        print(colored(f"### {message.decode()} ###", "yellow"))
 
         # Accept the invitation
         response = input("Do you accept the invitation? (Y/N): ").lower()
@@ -56,12 +59,39 @@ def receive_portinfo(udpserver_socket):
 
 def play_game(tcpclient_socket):
     # TCP connection to play Rock-Paper-Scissors
+    move = ["rock", "paper", "scissors"]
+    print_imgage = {
+    "rock" : """
+        _______
+    ---'   ____)
+        (_____)
+        (_____)
+        (____)
+    ---.__(___)
+    """,
+    "paper" : """
+        _______
+    ---'    ____)____
+            ______)
+            _______)
+            _______)
+    ---.__________)
+    """,
+    "scissors" : """
+        _______
+    ---'   ____)____
+            ______)
+        __________)
+        (____)
+    ---.__(___)
+    """}
     while True:
-        playerB_move = input("Enter your move (rock/paper/scissors): ").lower()
+        select = int(input("Enter your move (1. rock / 2. paper / 3. scissors): ").lower())
+        playerB_move = move[select-1]
+        print(colored(f"You played: {print_imgage[playerB_move]}"), "green")
         tcpclient_socket.send(playerB_move.encode())
         playerA_move = tcpclient_socket.recv(1024).decode()
-
-        print(f"Player A played: {playerA_move}")
+        print(colored(f"Opponent played: {print_imgage[playerA_move]}"), "red")
 
         if playerA_move == playerB_move:
             print("It's a tie!, play again")
@@ -76,6 +106,7 @@ def play_game(tcpclient_socket):
             break
 
 def main():
+    init()
     portB = select_port()
     udpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpserver_socket.bind((ipB, portB))
