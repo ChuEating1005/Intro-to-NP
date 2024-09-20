@@ -21,7 +21,7 @@ def send_invitation(udpclient_socket):
     message = "Game Invitation: Rock-Paper-Scissors"
     available_servers = []
 
-    for ip in host_ips:
+    for ip in host_ips.values():
         for port in range(search_port[0], search_port[1]+1):
             udpclient_socket.sendto(message.encode(), (ip, port))
             try:
