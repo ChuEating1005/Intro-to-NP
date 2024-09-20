@@ -10,8 +10,22 @@ ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
             "140.113.235.153": "linux3.cs.nycu.edu.tw",
             "140.113.235.154": "linux4.cs.nycu.edu.tw"}
 ipB = "140.113.235.152"
-portB = 18005
 
+def find_available_ports():
+    available_ports = []
+    for port in range(18000, 18010 + 1):
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            try:
+                s.bind(("127.0.0.1", port))
+                s.close()
+                available_ports.append(port)
+            except OSError:
+                # If bind fails, the port is likely in use
+                pass
+    for i, port in enumerate(available_ports):
+        print(f"{i+1}. Port {port} is available.")
+    portB = int(input("Choose a port to bind: "))
+    return portB
 
 def receive_invitation(udpserver_socket):
     print("Waiting for game invitation...")
@@ -62,6 +76,7 @@ def play_game(tcpclient_socket):
             break
 
 def main():
+    portB = find_available_ports()
     udpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpserver_socket.bind((ipB, portB))
 
