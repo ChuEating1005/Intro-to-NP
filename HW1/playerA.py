@@ -80,8 +80,6 @@ def main():
 
     send_portinfo(udpclient_socket, playerB_server[1], playerB_server[2])
 
-    udpclient_socket.close()
-
     tcpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcpserver_socket.bind((ipA, portA))
     tcpserver_socket.listen(1)
@@ -92,6 +90,7 @@ def main():
 
     start_game(conn, playerB_server[1], playerB_server[2])
     conn.close()
+    udpclient_socket.close()
     tcpserver_socket.close()
 
 if __name__ == "__main__":
