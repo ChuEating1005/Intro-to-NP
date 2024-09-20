@@ -68,3 +68,5 @@ def main():
     client_socket.connect((ipA, portA))
     play_game(client_socket, ipA, portA)
 
+if __name__ == "__main__":
+    main()

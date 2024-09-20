@@ -69,7 +69,7 @@ def start_game(conn):
 def main():
 
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client_socket.settimeout(5)
+    client_socket.settimeout(1)
 
     available_servers = send_invitation(client_socket)
     server = choose_server(available_servers)
