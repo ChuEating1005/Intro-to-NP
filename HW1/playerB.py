@@ -9,7 +9,7 @@ ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
             "140.113.235.152": "linux2.cs.nycu.edu.tw",
             "140.113.235.153": "linux3.cs.nycu.edu.tw",
             "140.113.235.154": "linux4.cs.nycu.edu.tw"}
-ipB = "140.113.235.152"
+ipB = host_ips[socket.gethostname()]
 
 def select_port():
     available_ports = []
