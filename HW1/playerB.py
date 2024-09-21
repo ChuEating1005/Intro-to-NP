@@ -33,6 +33,8 @@ def receive_invitation(udpserver_socket):
     while True:
         # Receive the invitation
         message, udpclient_address = udpserver_socket.recvfrom(1024)
+        if message.decode() != "Game Invitation: Rock-Paper-Scissors":
+            continue
         ipA = udpclient_address[0]
         print(f"Received invitation from {ip_host[ipA]} on {ipA}: ")
         print(f"\n### {message.decode()} ###\n")
@@ -49,8 +51,15 @@ def receive_invitation(udpserver_socket):
             continue
 
 def receive_portinfo(udpserver_socket):
-    message, udpclient_address = udpserver_socket.recvfrom(1024)
-    ipA, portA = message.decode().split(", ")
+    while True:
+        message, udpclient_address = udpserver_socket.recvfrom(1024)
+        addr = message.decode().split(", ")
+        if len(addr) != 2:
+            print("Invalid address format. Please try again.")
+            continue
+        else:
+            ipA, portA = addr
+            break
     portA = int(portA)
     print(f"Received player A's address: {ipA}:{portA}")
     return ipA, portA
