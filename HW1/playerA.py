@@ -12,7 +12,57 @@ ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
             "140.113.235.154": "linux4.cs.nycu.edu.tw"}
 search_port = [18001, 18005]
 ipA = "140.113.235.151"
-portA = 18000
+portA = 1800
+pA_image = {
+    "rock" : """
+    _______
+---'   ____)
+      (_____)
+      (_____)
+      (____)
+---.__(___)
+    """,
+    "paper" : """
+     _______
+---'    ____)____
+           ______)
+          _______)
+         _______)
+---.__________)
+    """,
+    "scissors" : """
+    _______
+---'   ____)____
+          ______)
+       __________)
+      (____)
+---.__(___)
+    """}
+pB_image = {
+    "rock" : """
+        _______
+     (____   '---
+    (_____)
+    (_____)
+     (____)
+      (___)__.---
+    """,
+    "paper" : """
+        _______
+  ____)____    '---
+ (______
+(_______
+ (_______
+      (__________.---
+    """,
+    "scissors" : """
+        _______
+  ____)____    '---
+ (______
+(__________
+      (____)
+       (___)__.---
+    """}
 
 def send_invitation(udpclient_socket):
     
@@ -54,39 +104,14 @@ def send_portinfo(udpclient_socket, ipB, portB):
 def start_game(conn):
     # TCP connection to play Rock-Paper-Scissors
     move = ["rock", "paper", "scissors"]
-    print_imgage = {
-    "rock" : """
-    _______
----'   ____)
-      (_____)
-      (_____)
-      (____)
----.__(___)
-    """,
-    "paper" : """
-     _______
----'    ____)____
-           ______)
-          _______)
-         _______)
----.__________)
-    """,
-    "scissors" : """
-    _______
----'   ____)____
-          ______)
-       __________)
-      (____)
----.__(___)
-    """}
     while True:
-        playerB_move = conn.recv(1024).decode()
         select = int(input("Enter your move (1. rock / 2. paper / 3. scissors): ").lower())
         playerA_move = move[select-1]
-        print(f"You played: \n{print_imgage[playerA_move]}\n")
+        print(f"You played: \n{pA_image[playerA_move]}\n")
+        
+        playerB_move = conn.recv(1024).decode()
         conn.send(playerA_move.encode())
-
-        print(f"Opponent played: \n{print_imgage[playerB_move]}\n")
+        print(f"Opponent played: \n{pB_image[playerB_move]}\n")
 
         if playerA_move == playerB_move:
             print("It's a tie!, play again")
