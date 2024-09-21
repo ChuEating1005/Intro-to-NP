@@ -1,7 +1,5 @@
 # Clinet Side (Player A), Send Invitation
 import socket
-from colorama import init
-from termcolor import colored
 
 host_ips = {"linux1.cs.nycu.edu.tw": "140.113.235.151", 
             "linux2.cs.nycu.edu.tw": "140.113.235.152",
@@ -85,10 +83,10 @@ def start_game(conn):
         playerB_move = conn.recv(1024).decode()
         select = int(input("Enter your move (1. rock / 2. paper / 3. scissors): ").lower())
         playerA_move = move[select-1]
-        print(colored(f"You played: {print_imgage[playerA_move]}"), "green")
+        print(f"You played: \n{print_imgage[playerA_move]}\n")
         conn.send(playerA_move.encode())
 
-        print(colored(f"Opponent played: {print_imgage[playerB_move]}"), "red")
+        print(f"Opponent played: \n{print_imgage[playerB_move]}\n")
 
         if playerA_move == playerB_move:
             print("It's a tie!, play again")
@@ -103,7 +101,6 @@ def start_game(conn):
             break
 
 def main():
-    init()
     udpclient_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpclient_socket.settimeout(5)
 

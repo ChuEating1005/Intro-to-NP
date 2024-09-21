@@ -1,7 +1,5 @@
 # Server Side (Player B), Receive Invitation
 import socket
-from colorama import init
-from termcolor import colored
 
 host_ips = {"linux1.cs.nctu.edu.tw": "140.113.235.151", 
             "linux2.cs.nctu.edu.tw": "140.113.235.152",
@@ -36,8 +34,8 @@ def receive_invitation(udpserver_socket):
         # Receive the invitation
         message, udpclient_address = udpserver_socket.recvfrom(1024)
         ipA = udpclient_address[0]
-        print(f"Received invitation from {ip_host[ipA]} on {ipA}: ")
-        print(colored(f"### {message.decode()} ###", "yellow"))
+        print(f"\nReceived invitation from {ip_host[ipA]} on {ipA}: ")
+        print(f"\n### {message.decode()} ###")
 
         # Accept the invitation
         response = input("Do you accept the invitation? (Y/N): ").lower()
@@ -88,10 +86,10 @@ def play_game(tcpclient_socket):
     while True:
         select = int(input("Enter your move (1. rock / 2. paper / 3. scissors): ").lower())
         playerB_move = move[select-1]
-        print(colored(f"You played: {print_imgage[playerB_move]}"), "green")
+        print(f"You played: \n{print_imgage[playerB_move]}\n")
         tcpclient_socket.send(playerB_move.encode())
         playerA_move = tcpclient_socket.recv(1024).decode()
-        print(colored(f"Opponent played: {print_imgage[playerA_move]}"), "red")
+        print(f"Opponent played: \n{print_imgage[playerA_move]}\n")
 
         if playerA_move == playerB_move:
             print("It's a tie!, play again")
@@ -106,7 +104,6 @@ def play_game(tcpclient_socket):
             break
 
 def main():
-    init()
     portB = select_port()
     udpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpserver_socket.bind((ipB, portB))
