@@ -37,7 +37,7 @@ def send_invitation(udpclient_socket):
 
 def choose_server(available_servers):
     if not available_servers:
-        print("No available players found.")
+        print("No available players found... Keep searching.")
         return None
     else:
         print("Choose a player to play the game.")
@@ -104,8 +104,10 @@ def main():
     udpclient_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpclient_socket.settimeout(5)
 
-    available_udpservers = send_invitation(udpclient_socket)
-    playerB_server = choose_server(available_udpservers)
+    available_udpservers = []
+    while not available_udpservers:
+        available_udpservers = send_invitation(udpclient_socket)
+        playerB_server = choose_server(available_udpservers)
 
     send_portinfo(udpclient_socket, playerB_server[1], playerB_server[2])
 

@@ -34,8 +34,8 @@ def receive_invitation(udpserver_socket):
         # Receive the invitation
         message, udpclient_address = udpserver_socket.recvfrom(1024)
         ipA = udpclient_address[0]
-        print(f"\nReceived invitation from {ip_host[ipA]} on {ipA}: ")
-        print(f"\n### {message.decode()} ###")
+        print(f"Received invitation from {ip_host[ipA]} on {ipA}: ")
+        print(f"\n### {message.decode()} ###\n")
 
         # Accept the invitation
         response = input("Do you accept the invitation? (Y/N): ").lower()
