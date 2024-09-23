@@ -149,7 +149,7 @@ def play_game(tcpclient_socket):
         if contA == 'continue':
             continue
         else:
-            print("PlayerB has left the game...")
+            print("PlayerA has left the game...")
             break
 
 def main():
