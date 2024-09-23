@@ -77,28 +77,32 @@ def select_port():
     select = int(input("Select a port: "))
     return available_ports[select-1]
 
-def receive_invitation(udpserver_socket):
+def waiting_invitation(udpserver_socket):
     print("Waiting for game invitation...")
 
     while True:
         # Receive the invitation
         message, udpclient_address = udpserver_socket.recvfrom(1024)
-        if message.decode() != "Game Invitation: Rock-Paper-Scissors":
-            continue
-        ipA = udpclient_address[0]
-        print(f"Received invitation from {ip_host[ipA]} on {ipA}: ")
-        print(f"\n### {message.decode()} ###\n")
 
-        # Accept the invitation
-        response = input("Do you accept the invitation? (Y/N): ").lower()
-        if response == 'y':
-            response = "Accepted"
-            udpserver_socket.sendto(response.encode(), udpclient_address)
-            break
-        else:
-            response = "Declined"
+        if message.decode() == "ping":
+            response = "pong"
             udpserver_socket.sendto(response.encode(), udpclient_address)
             continue
+        elif message.decode() == "Game Invitation: Rock-Paper-Scissors":
+            ipA = udpclient_address[0]
+            print(f"Received invitation from {ip_host[ipA]} on {ipA}: ")
+            print(f"\n### {message.decode()} ###\n")
+
+            # Accept the invitation
+            response = input("Do you accept the invitation? (Y/N): ").lower()
+            if response == 'y':
+                response = "Accepted"
+                udpserver_socket.sendto(response.encode(), udpclient_address)
+                break
+            else:
+                response = "Declined"
+                udpserver_socket.sendto(response.encode(), udpclient_address)
+                continue
 
 def receive_portinfo(udpserver_socket):
     while True:
@@ -142,7 +146,7 @@ def main():
     udpserver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpserver_socket.bind((ipB, portB))
 
-    receive_invitation(udpserver_socket)
+    waiting_invitation(udpserver_socket)
     ipA, portA = receive_portinfo(udpserver_socket)
     udpserver_socket.close()
 

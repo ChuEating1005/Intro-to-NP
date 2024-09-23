@@ -64,11 +64,10 @@ pB_image = {
        (___)__.---
     """}
 
-def send_invitation(udpclient_socket):
-    
+def search_waiting_server(udpclient_socket):
     print("Search for waiting players...")
-    
-    message = "Game Invitation: Rock-Paper-Scissors"
+
+    message = "ping"
     available_servers = []
 
     for ip in host_ips.values():
@@ -77,12 +76,10 @@ def send_invitation(udpclient_socket):
         try:
             response, udpserver_addr = udpclient_socket.recvfrom(1024)
             ipB, portB = udpserver_addr[0], udpserver_addr[1]
-            if response.decode() == "Accepted":
-                print(f"{ip_host[ipB]} accept the invitation, player address: {ipB}:{portB}")
+            if response.decode() == "pong":
                 available_servers.append((ip_host[ipB], ipB, portB))
         except socket.timeout:
             pass
-
     return available_servers
 
 def choose_server(available_servers):
@@ -90,11 +87,34 @@ def choose_server(available_servers):
         print("No available players found... Keep searching.")
         return None
     else:
-        print("Choose a player to play the game.")
+        print("Choose a player to send invitation:")
         for i, server in enumerate(available_servers):
             print(f"{i+1}. {server[0]} on {server[1]}:{server[2]}")
         choice = int(input("Enter the number of the player: "))
         return available_servers[choice-1]
+    
+def send_invitation(udpclient_socket, ipB, portB):
+    print("Send game invitation to other players...")
+
+    message = "Game Invitation: Rock-Paper-Scissors"
+    available_servers = []
+
+    udpclient_socket.sendto(message.encode(), (ipB, portB))
+    try:
+        response, addr = udpclient_socket.recvfrom(1024)
+        if response.decode() == "Accepted":
+            print(f"{ip_host[ipB]} accept the invitation, player address: {ipB}:{portB}")
+            return True
+        elif response.decode() == "Declined":
+            print(f"{ip_host[ipB]} declined the invitation... Keep searching.")
+            return False
+    except socket.timeout:
+        pass
+    
+    print(f"{ip_host[ipB]} does not respond... Keep searching.")
+    return False
+
+
     
 def send_portinfo(udpclient_socket, ipB, portB):
     message = ipA + ', ' + str(portA)
@@ -129,10 +149,12 @@ def main():
     udpclient_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpclient_socket.settimeout(5)
 
-    available_udpservers = []
-    while not available_udpservers:
-        available_udpservers = send_invitation(udpclient_socket)
+    while True:
+        available_udpservers = []
+        available_udpservers = search_waiting_server(udpclient_socket)
         playerB_server = choose_server(available_udpservers)
+        if send_invitation(udpclient_socket, playerB_server[1], playerB_server[2]):
+            break
 
     send_portinfo(udpclient_socket, playerB_server[1], playerB_server[2])
 
