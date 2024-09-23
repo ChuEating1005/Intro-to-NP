@@ -12,7 +12,7 @@ ip_host = {"140.113.235.151": "linux1.cs.nycu.edu.tw",
             "140.113.235.154": "linux4.cs.nycu.edu.tw"}
 search_port = [18001, 18005]
 ipA = "140.113.235.151"
-portA = 1800
+portA = 18000
 pA_image = {
     "rock" : """
     _______
