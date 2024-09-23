@@ -136,9 +136,20 @@ def play_game(tcpclient_socket):
             (playerB_move == 'scissors' and playerA_move == 'paper') or \
             (playerB_move == 'paper' and playerA_move == 'rock'):
             print("You win! Congratulations!")
-            break
         else:
             print("You lose! Game over!")
+        
+        contB = input("Do you want to play again? (Y/N): ").lower()
+        if contB == 'n':
+            tcpclient_socket.send("leave".encode())
+            break
+        
+        tcpclient_socket.send("continue".encode())
+        contA = tcpclient_socket.recv(1024).decode()
+        if contA == 'continue':
+            continue
+        else:
+            print("PlayerB has left the game...")
             break
 
 def main():

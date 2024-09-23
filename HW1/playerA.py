@@ -113,8 +113,6 @@ def send_invitation(udpclient_socket, ipB, portB):
     
     print(f"{ip_host[ipB]} does not respond... Keep searching.")
     return False
-
-
     
 def send_portinfo(udpclient_socket, ipB, portB):
     message = ipA + ', ' + str(portA)
@@ -140,10 +138,22 @@ def start_game(conn):
             (playerA_move == 'scissors' and playerB_move == 'paper') or \
             (playerA_move == 'paper' and playerB_move == 'rock'):
             print("You win! Congratulations!")
-            break
         else:
             print("You lose! Game over!")
+
+        contA = input("Do you want to play again? (Y/N): ").lower()
+        if contA == 'n':
+            conn.send("leave".encode())
             break
+        
+        conn.send("continue".encode())
+        contB = conn.recv(1024).decode()
+        if contB == 'continue':
+            continue
+        else:
+            print("PlayerB has left the game...")
+            break
+
 
 def main():
     udpclient_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
