@@ -84,17 +84,17 @@ def search_waiting_server(udpclient_socket):
 
 def choose_server(available_servers):
     if not available_servers:
-        print("No available players found... Keep searching.")
+        print("\nNo available players found... Keep searching.\n")
         return None
     else:
-        print("Choose a player to send invitation:")
+        print("\nChoose a player to send invitation:")
         for i, server in enumerate(available_servers):
             print(f"{i+1}. {server[0]} on {server[1]}:{server[2]}")
         choice = int(input("Enter the number of the player: "))
         return available_servers[choice-1]
     
 def send_invitation(udpclient_socket, ipB, portB):
-    print("Send game invitation to other players...")
+    print("\nSend game invitation to other players...")
 
     message = "Game Invitation: Rock-Paper-Scissors"
     available_servers = []
@@ -147,7 +147,7 @@ def start_game(conn):
 
 def main():
     udpclient_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udpclient_socket.settimeout(5)
+    udpclient_socket.settimeout(10)
 
     while True:
         available_udpservers = []
