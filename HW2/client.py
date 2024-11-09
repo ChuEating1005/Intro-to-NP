@@ -1,7 +1,10 @@
 import socket
 import time
+import signal
+import sys
 from getpass import getpass 
 import battleship
+import gomoku
 
 host_ips = {"linux1": "140.113.235.151", 
             "linux3": "140.113.235.153",
@@ -12,29 +15,35 @@ ip_host = {"140.113.235.151": "linux1",
             "140.113.235.153": "linux3",
             "140.113.235.154": "linux4"}
 
+def signal_handler(sig, frame):
+    """
+    Handle Ctrl+C signal and gracefully exit the client program.
+    """
+    print("\nCaught Ctrl+C. Exiting...")
+    sys.exit(0)  # Exit the program
+
 def bold_green(text):
     return "\033[32;1m" + text + "\033[0m"
 
 def create_room(client):
     client.send("ready".encode())
-    connected = False
-    while not connected:
-        try:
-            host = host_ips[socket.gethostname()]
-            (port, game_type) = client.recv(1024).decode().strip().split(', ')
-            port = int(port)
-            game_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            game_server.bind((host, port))
-            game_server.listen(1)
-            client.send("room created successfully".encode())
-            connected = True
-        except socket.error as e:
-            print("Error creating or binding server socket: \n")
-            print("---------------------------------------")
-            print(e)
-            print("---------------------------------------\n")
-            game_server = None
-            client.send("error".encode())
+
+    try:
+        host = host_ips[socket.gethostname()]
+        (port, game_type) = client.recv(1024).decode().strip().split(', ')
+        port = int(port)
+        game_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        game_server.bind((host, port))
+        game_server.listen(1)
+        client.send("room created successfully".encode())
+    except socket.error as e:
+        print("Error creating or binding server socket: \n")
+        print("---------------------------------------")
+        print(e)
+        print("---------------------------------------\n")
+        game_server = None
+        client.send("error".encode())
+        return
     
     while True and game_server != None:
         conn, addr = game_server.accept()
@@ -59,9 +68,14 @@ def join_room(client):
 def play_game(conn, game_type, player):
     if game_type == "Battleship":
         battleship.start_game(conn, player)
+    else:
+        gomoku.start_game(conn, player)
 
 
 def client_program():
+    # Register the signal handler for SIGINT (Ctrl+C)
+    signal.signal(signal.SIGINT, signal_handler)
+
     host = "140.113.235.151"
     while True:
         try:
@@ -111,6 +125,7 @@ def client_program():
         print(f"Error: {e}")
     finally:
         client.close()
+        print("Connection closed.")
 
 if __name__ == "__main__":
     client_program()

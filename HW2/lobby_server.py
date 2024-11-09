@@ -1,3 +1,5 @@
+import signal
+import sys
 import socket
 import threading
 import time
@@ -45,11 +47,30 @@ success = "\033[33;1m= Success ==========================================\n\033[
 failed = "\033[33;1m= Error ============================================\n\033[0m"
 br = "\033[33;1m====================================================\n\033[0m"
 # Data structures to hold user data and online players
+active_connections = []  # Track active client connections
 users = {}  # Format: {"username": "password"}
 online_players = {}  # Format: {"username": (conn, address, status)}
 game_rooms = {}  # Format: {"room_name": {"type": "game_type", "public": True/False, "status": "waiting/playing", "owner": "username", "guest": "username"}}
 invited_list = {}  # Format: {"username": [{"room_name": "room1", "owner": "player1", "type": "game_type"}]}
 
+def signal_handler(sig, frame):
+    """
+    Handle Ctrl+C signal and gracefully shut down the server.
+    Notify all connected clients before shutting down.
+    """
+    print("\nCaught Ctrl+C. Notifying clients and shutting down server...")
+    
+    with lock:
+        for conn in active_connections:
+            try:
+                conn.send("Server is shutting down. Goodbye.\n".encode())
+                conn.close()
+            except Exception as e:
+                print(f"Error notifying client: {e}")
+        active_connections.clear()
+    
+    print("All clients notified. Exiting.")
+    sys.exit(0)
 
 def register(conn):
     conn.send("Enter username: ".encode())
@@ -73,7 +94,7 @@ def login(conn, addr):
         if users[username] == password:
             with lock:  # Ensure thread-safe access to `online_players`
                 online_players[username] = (conn, addr, "idle")
-            conn.send((success + bold_green(f"Login successful. Welcome {username}.\n\n") + br).encode())
+            conn.send((success + bold_green(f"Login successful. Welcome {username}.\n") + br + '\n').encode())
             list_rooms(conn, username)
         else:
             conn.send((failed + bold_red("Incorrect password. Try again.\n") + br).encode())
@@ -241,15 +262,14 @@ def create_room(conn, user, addr):
     invited_conn.send(f"{addr[0]}, {port}, {game_type}".encode())
     update_status(user, "playing")
     update_status(invited_player, "playing")
-    close1 = conn.recv(1024).decode().strip()
-    print(close1)
+    close = conn.recv(1024).decode().strip()
     update_status(user, "idle")
     update_status(invited_player, "idle")
     del game_rooms[room_name]
 
 def join_room(conn, user):
     if not game_rooms:
-        conn.send(f"{br}No rooms available to join.\n{br}".encode())
+        conn.send((failed + bold_red("No rooms available to join.\n") + br).encode())
         return
 
     # List available rooms for the user to join
@@ -290,7 +310,6 @@ def join_room(conn, user):
             conn.send((br + bold_red("Room is not available for joining now. Choose another.\n") + br).encode())
     
     close = conn.recv(1024).decode().strip()
-    print(close)
 
 def show_invitations(conn, user):
     global invited_list
@@ -308,7 +327,7 @@ def show_invitations(conn, user):
     conn.send((show + bold_blue(invitation_list) + br + "Enter the number of the invitation to reply or 0 to exit: ").encode())
 
     choice = conn.recv(1024).decode().strip()
-    while not choice.isdigit() or int(choice) < 1 or int(choice) > len(invited_list):
+    while not choice.isdigit() or int(choice) < 0 or int(choice) > len(invited_list):
         invalid(conn)
         conn.send((bold_blue(invitation_list)).encode())
         conn.send(("Enter the number of the invitation to reply or 0 to cancel: ").encode())
@@ -333,7 +352,6 @@ def show_invitations(conn, user):
                 conn.send((success + bold_green(f"Joining room '{room_name}' invited by {owner}.\n") + br).encode())
                 conn.send("join room".encode())
                 close = conn.recv(1024).decode().strip()
-                print(close)
                 break
             elif response == 'n':
                 owner_conn.send('n'.encode())
@@ -348,7 +366,7 @@ def show_invitations(conn, user):
 
 
 def invalid(conn):
-    conn.send(bold_red("Invalid option. Try again.\n").encode())
+    conn.send((failed + bold_red("Invalid option. Try again.\n") + br).encode())
 
 def bold_green(text):
     return "\033[32;1m" + text + "\033[0m"
@@ -382,95 +400,124 @@ def update_status(username, new_status):
         print(f"Player {username} not found in online_players.")
 
 def handle_client(conn, addr):
-    global users, online_players
-    conn.send(welcome.encode())
-    conn.send(bold_blue("Welcome to the Lobby Server. Please register or login.\n").encode())
+    """
+    Handle individual client connections.
+    """
+    global active_connections, users, online_players
 
+    # Add connection to the active list
+    with lock:
+        active_connections.append(conn)
 
-    while True:
-        try:
+    try:
+        conn.send(welcome.encode())
+        conn.send(bold_blue("Welcome to the Lobby Server. Please register or login.\n").encode())
+        while True:
             logined = False
             user = ""
             for username in list(online_players.keys()):
                 conn_obj, _, _ = online_players[username]
                 if conn_obj == conn:
                     user = username 
-                    conn.send("\nChoose a option to do: \n1. List rooms\n2. Create room\n3. Join room\n4. Show invitations\n5. Logout\n6. Exit\nEnter: ".encode())
-                    try:
-                        option = int(conn.recv(1024).decode().strip())
-                        command = online_cmd[option]
-                        logined = True
-                    except ValueError:
-                        command = "invalid"
-
-            if not logined:
-                conn.send("\nChoose a option to do: \n1. Register\n2. Login\n3. Exit\nEnter: ".encode())
-                try:
-                    option = int(conn.recv(1024).decode().strip())
-                    command = default_cmd[option]
-                except ValueError:
+                    logined = True
+                    break
+            if logined:
+                conn.send("\nChoose a option to do: \n1. List rooms\n2. Create room\n3. Join room\n4. Show invitations\n5. Logout\n6. Exit\nEnter: ".encode())
+                option = conn.recv(1024).decode().strip()
+                if not option.isdigit() or int(option) < 1 or int(option) > 6:
                     command = "invalid"
-
-
+                else:
+                    option = int(option)
+                    command = online_cmd[option]
+            else:
+                conn.send("\nChoose a option to do: \n1. Register\n2. Login\n3. Exit\nEnter: ".encode())
+                option = conn.recv(1024).decode().strip()
+                if not option.isdigit() or int(option) < 1 or int(option) > 3:
+                    command = "invalid"
+                else:
+                    option = int(option)
+                    command = default_cmd[option]
             if command == "register":
                 register(conn)
-
             elif command == "login":
                 login(conn, addr)
-
             elif command == "logout":
                 logout(conn)
-
             elif command == "list":
                 list_rooms(conn, user)
-
             elif command == "create":
                 create_room(conn, user, addr)
-
             elif command == "join":
                 join_room(conn, user)
-
             elif command == "show invitations":
                 show_invitations(conn, user)
-            
             elif command == "exit":
                 if logined:
                     logout(conn)
                 conn.send("Goodbye.\n".encode())
                 break
             else:
-               invalid(conn)
+                invalid(conn)
 
-        except Exception as e:
-            print(bold_red(f"Error handling client {addr}: {e}"))
-            break
+    except ConnectionResetError:
+        print(f"Client {addr} forcibly closed the connection.")
+    except Exception as e:
+        print(f"Error handling client {addr}: {e}")
+    finally:
+        # Remove connection from active list and close
+        with lock:
+            if conn in active_connections:
+                active_connections.remove(conn)
+        conn.close()
+        print(f"Connection with {addr} closed.")
 
-    conn.close()
 
 def start_server():
-    # Get the host IP and port number
-    host = host_ips[socket.gethostname()]
-    # Create a server TCP socket
-    while True:
+    # Register the signal handler for SIGINT (Ctrl+C)
+    signal.signal(signal.SIGINT, signal_handler)
+    
+    # Get the host IP
+    try:
+        host = host_ips[socket.gethostname()]
+    except KeyError:
+        print("Error: Hostname not found in the host_ips dictionary.")
+        sys.exit(1)
+
+    lobby_server = None
+
+    # Create and bind server socket
+    while lobby_server is None:
         try:
             port = int(input("Please enter port number: "))
             lobby_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            lobby_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Allow reusing the same port
             lobby_server.bind((host, port))
             lobby_server.listen(5)
             print(f"Lobby Server running on {host}:{port}")
-            break
+        except ValueError:
+            print(bold_red("Invalid port number. Please enter a valid integer."))
         except socket.error as e:
-            print("Error creating or binding server socket: \n")
+            print("Error creating or binding server socket:")
             print("---------------------------------------")
             print(e)
-            print("---------------------------------------\n")
+            print("---------------------------------------")
             lobby_server = None
 
-
-    while True and lobby_server != None:
-        conn, addr = lobby_server.accept()
-        print(f"New connection from {addr}")
-        threading.Thread(target=handle_client, args=(conn, addr)).start()
+    # Accept incoming connections
+    try:
+        while lobby_server:
+            try:
+                conn, addr = lobby_server.accept()
+                print(f"New connection from {addr}")
+                threading.Thread(target=handle_client, args=(conn, addr)).start()
+            except Exception as e:
+                print(f"Error accepting connection: {e}")
+    except KeyboardInterrupt:
+        print("\nServer shutting down.")
+    finally:
+        if lobby_server:
+            lobby_server.close()
+        print("Server socket closed.")
 
 if __name__ == "__main__":
     start_server()

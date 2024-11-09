@@ -16,6 +16,9 @@ def bold_green(text):
 def bold_red(text):
     return "\033[31;1m" + text + "\033[0m"
 
+def bold_blue(text):
+    return "\033[34;1m" + text + "\033[0m"
+
 def place_ships(board):
     """Randomly place ships on the board."""
     ships = []
@@ -23,7 +26,7 @@ def place_ships(board):
         row = random.randint(0, BOARD_SIZE - 1)
         col = random.randint(0, BOARD_SIZE - 1)
         if board[row][col] == "~":
-            board[row][col] = "S"
+            board[row][col] = bold_blue("S")
             ships.append((row, col))
     return ships
 
@@ -33,7 +36,7 @@ def print_board(board, hide_ships=True):
     print("  " + " ".join(str(i) for i in range(BOARD_SIZE)))
     for i, row in enumerate(board):
         if hide_ships:
-            print(f"{i} " + " ".join("~" if cell == "S" else cell for cell in row))
+            print(f"{i} " + " ".join("~" if cell == bold_blue("S") else cell for cell in row))
         else:
             print(f"{i} " + " ".join(row))
 
@@ -59,6 +62,7 @@ def server_game(conn, board, ships):
 
         # Check if the attack hits
         if is_hit(ships, row, col):
+            board[row][col] = bold_red("*")
             ships.remove((row, col))
             # Check if all ships are sunk
             if not ships:
@@ -66,10 +70,10 @@ def server_game(conn, board, ships):
                 conn.send("win".encode())
                 break
             else:
-                print(bold_green("Hit!"))
+                print(bold_red("Hit!"))
                 conn.send("hit".encode())
         else:
-            print(bold_red("Miss."))
+            print(bold_green("Miss."))
             conn.send("miss".encode())        
 
         # Server's turn to attack
@@ -124,16 +128,17 @@ def client_game(client, board, ships):
         # Check if the attack hits
         if is_hit(ships, row, col):
             ships.remove((row, col))
+            board[row][col] = bold_red("*")
             # Check if all ships are sunk
             if not ships:
                 print(bold_red("All your ships are sunk! You lose."))
                 client.send("win".encode())
                 break
             else:
-                print(bold_green("Hit!"))
+                print(bold_red("Hit!"))
                 client.send("hit".encode())
         else:
-            print(bold_red("Miss."))
+            print(bold_green("Miss."))
             client.send("miss".encode())
             
 
