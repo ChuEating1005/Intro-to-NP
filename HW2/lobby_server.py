@@ -104,7 +104,7 @@ def logout(conn):
         conn_obj, _, _ = online_players[username]
         if conn_obj == conn:  # Match the connection object
             del online_players[username]  # Safely delete from the original dictionary
-            conn.send("Logout successful.\n".encode())
+            conn.send((success + bold_green("Logout successful.\n") + br).encode())
 
 def list_rooms(conn, user):
     # List online players
@@ -234,7 +234,7 @@ def create_room(conn, user, addr):
                         game_rooms[room_name]["status"] = "Playing"
                         game_rooms[room_name]["guest"] = invited_player
                 else:
-                    conn.send((br + bold_red(f"{invited_player} declined your invitation.\nPlease choose another user to invite.") + br).encode())
+                    conn.send((failed + bold_red(f"{invited_player} declined your invitation.\nPlease choose another user to invite.\n") + br).encode())
                 
             else:
                 invalid(conn)
@@ -458,18 +458,23 @@ def handle_client(conn, addr):
                 break
             else:
                 invalid(conn)
-
+    except BrokenPipeError:
+        print(bold_red(f"Client {addr} disconnected (Broken pipe)."))
     except ConnectionResetError:
         print(f"Client {addr} forcibly closed the connection.")
     except Exception as e:
         print(f"Error handling client {addr}: {e}")
     finally:
+        for username in list(online_players.keys()):  
+            conn_obj, _, _ = online_players[username]
+            if conn_obj == conn:
+                del online_players[username]
         # Remove connection from active list and close
         with lock:
             if conn in active_connections:
                 active_connections.remove(conn)
         conn.close()
-        print(f"Connection with {addr} closed.")
+        print(bold_red(f"Connection with {addr} closed."))
 
 
 def start_server():
@@ -493,11 +498,11 @@ def start_server():
             lobby_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Allow reusing the same port
             lobby_server.bind((host, port))
             lobby_server.listen(5)
-            print(f"Lobby Server running on {host}:{port}")
+            print(bold_green(f"Lobby Server running on {host}:{port}"))
         except ValueError:
             print(bold_red("Invalid port number. Please enter a valid integer."))
         except socket.error as e:
-            print("Error creating or binding server socket:")
+            print(bold_red("Error creating or binding server socket:"))
             print("---------------------------------------")
             print(e)
             print("---------------------------------------")
@@ -508,16 +513,16 @@ def start_server():
         while lobby_server:
             try:
                 conn, addr = lobby_server.accept()
-                print(f"New connection from {addr}")
+                print(bold_green(f"New connection from {addr}"))
                 threading.Thread(target=handle_client, args=(conn, addr)).start()
             except Exception as e:
                 print(f"Error accepting connection: {e}")
     except KeyboardInterrupt:
-        print("\nServer shutting down.")
+        print(bold_red("\nServer shutting down."))
     finally:
         if lobby_server:
             lobby_server.close()
-        print("Server socket closed.")
+        print(bold_red("Server socket closed."))
 
 if __name__ == "__main__":
     start_server()
