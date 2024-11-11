@@ -28,6 +28,9 @@ def bold_green(text):
 def bold_red(text):
     return "\033[31;1m" + text + "\033[0m"
 
+def bold_blue(text):
+    return "\033[34;1m" + text + "\033[0m"
+
 def create_room(client):
     client.send("ready".encode())
 
@@ -52,10 +55,10 @@ def create_room(client):
             conn, addr = game_server.accept()
             print(bold_green(f"Player join from {ip_host[addr[0]]}! Game start!"))
             play_game(conn, game_type, player='server')
-            print("Game over!")
+            print(bold_blue("Game over! Back to lobby..."))
             break
     except Exception as e:
-        print(bold_red("Connection closed by server."))
+        print(bold_red("Connection closed by the opponent. Back to lobby..."))
     conn.close()
     game_server.close()
     client.send("room close".encode())
@@ -68,11 +71,9 @@ def join_room(client):
     try:
         print(bold_green("Connected to the server! Game start!"))
         play_game(conn,  game_type, player='client')
-        print("Game over!")
-    except BrokenPipeError as e:
-        print(bold_red("Connection closed by server."))
+        print(bold_blue("Game over! Back to lobby..."))
     except Exception as e:
-        print(f"Error: {e}")
+        print(bold_red("Connection closed by the opponent. Back to lobby..."))
     conn.close()
     client.send("room close".encode())
     

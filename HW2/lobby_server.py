@@ -139,6 +139,7 @@ def create_room(conn, user, addr):
     room_name = conn.recv(1024).decode().strip()
     while room_name in game_rooms:
         conn.send(bold_red("Room name already exists. Try another.\n").encode())
+        conn.send("Enter room name: ".encode())
         room_name = conn.recv(1024).decode().strip()
     
     conn.send("Choose a game you like: \n1. Battleship\n2. Gomoku\nEnter: ".encode())
@@ -430,7 +431,7 @@ def handle_client(conn, addr):
             if logined:
                 conn.send("\nChoose a option to do: \n1. List rooms\n2. Create room\n3. Join room\n4. Show invitations\n5. Logout\n6. Exit\nEnter: ".encode())
                 option = conn.recv(1024).decode().strip()
-                if option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 6:
+                if option == "" or option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 6:
                     command = "invalid"
                 else:
                     option = int(option)
