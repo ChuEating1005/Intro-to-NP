@@ -132,7 +132,7 @@ def client_program():
                     break
                 
                 client_message = ""
-                while client_message.strip() == "":
+                while client_message.strip() != "":
                     client_message = input()  # Take user input
                 client.send(client_message.encode())
             time.sleep(0.1)
