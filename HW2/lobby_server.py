@@ -179,10 +179,11 @@ def create_room(conn, user, addr):
             # Get a list of idle players
             idle_players = [username for username, (_, _, status) in online_players.items() if status == "idle" and username != user]
             conn.send("\nChoose a option to do: \n1. Send invitation\n2. List idle users\nEnter: ".encode())
-            option = int(conn.recv(1024).decode().strip())
+            option = conn.recv(1024).decode().strip()
             while option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 2:
                 command = "invalid"
                 conn.send("\nChoose a option to do: \n1. Send invitation\n2. List idle users\nEnter: ".encode())
+                option = conn.recv(1024).decode().strip()
             option = int(option)
             command = private_cmd[option]
 
