@@ -143,7 +143,7 @@ def create_room(conn, user, addr):
     
     conn.send("Choose a game you like: \n1. Battleship\n2. Gomoku\nEnter: ".encode())
     option = conn.recv(1024).decode().strip()
-    while not option.isdigit() or int(option) < 1 or int(option) > 2:
+    while option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 2:
         invalid(conn)
         conn.send("Choose a game you like: \n1. Battleship\n2. Gomoku\nEnter: ".encode())
         option = conn.recv(1024).decode().strip()
@@ -179,11 +179,12 @@ def create_room(conn, user, addr):
             # Get a list of idle players
             idle_players = [username for username, (_, _, status) in online_players.items() if status == "idle" and username != user]
             conn.send("\nChoose a option to do: \n1. Send invitation\n2. List idle users\nEnter: ".encode())
-            try:
-                option = int(conn.recv(1024).decode().strip())
-                command = private_cmd[option]
-            except ValueError:
+            option = int(conn.recv(1024).decode().strip())
+            while option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 2:
                 command = "invalid"
+                conn.send("\nChoose a option to do: \n1. Send invitation\n2. List idle users\nEnter: ".encode())
+            option = int(option)
+            command = private_cmd[option]
 
             # List idle players
             if command == "list_idle":
@@ -210,7 +211,7 @@ def create_room(conn, user, addr):
                 conn.send(("Enter the number of player to invite: ").encode())
                 option = conn.recv(1024).decode().strip()
 
-                while not option or not option.isdigit() or int(option) < 1 or int(option) > len(idle_players):
+                while option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > len(idle_players):
                     invalid(conn)
                     conn.send((bold_blue(player_list)).encode())
                     conn.send(("Enter the number of player to invite: ").encode())
@@ -287,7 +288,7 @@ def join_room(conn, user):
     
     conn.send((br + bold_blue(room_list) + br + "Enter the room number to join: ").encode())
     choice = conn.recv(1024).decode().strip()
-    while not choice or not choice.isdigit() or int(choice) < 1 or int(choice) > len(room_options):
+    while choice.isspace() or not choice.isdigit() or int(choice) < 1 or int(choice) > len(room_options):
         invalid(conn)
         conn.send("Enter the room number to join: ".encode())
         choice = conn.recv(1024).decode().strip()
@@ -327,7 +328,7 @@ def show_invitations(conn, user):
     conn.send((show + bold_blue(invitation_list) + br + "Enter the number of the invitation to reply or 0 to exit: ").encode())
 
     choice = conn.recv(1024).decode().strip()
-    while not choice.isdigit() or int(choice) < 0 or int(choice) > len(invited_list):
+    while choice.isspace() or not choice.isdigit() or int(choice) < 0 or int(choice) > len(invited_list):
         invalid(conn)
         conn.send((bold_blue(invitation_list)).encode())
         conn.send(("Enter the number of the invitation to reply or 0 to cancel: ").encode())
@@ -424,7 +425,7 @@ def handle_client(conn, addr):
             if logined:
                 conn.send("\nChoose a option to do: \n1. List rooms\n2. Create room\n3. Join room\n4. Show invitations\n5. Logout\n6. Exit\nEnter: ".encode())
                 option = conn.recv(1024).decode().strip()
-                if not option or not option.isdigit() or int(option) < 1 or int(option) > 6:
+                if option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 6:
                     command = "invalid"
                 else:
                     option = int(option)
@@ -432,7 +433,7 @@ def handle_client(conn, addr):
             else:
                 conn.send("\nChoose a option to do: \n1. Register\n2. Login\n3. Exit\nEnter: ".encode())
                 option = conn.recv(1024).decode().strip()
-                if not option or not option.isdigit() or int(option) < 1 or int(option) > 3:
+                if option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 3:
                     command = "invalid"
                 else:
                     option = int(option)

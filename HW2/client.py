@@ -25,6 +25,9 @@ def signal_handler(sig, frame):
 def bold_green(text):
     return "\033[32;1m" + text + "\033[0m"
 
+def bold_red(text):
+    return "\033[31;1m" + text + "\033[0m"
+
 def create_room(client):
     client.send("ready".encode())
 
@@ -44,26 +47,37 @@ def create_room(client):
         game_server = None
         client.send("error".encode())
         return
-    
-    while True and game_server != None:
-        conn, addr = game_server.accept()
-        print(bold_green(f"Player join from {ip_host[addr[0]]}! Game start!"))
-        play_game(conn, game_type, player='server')
-        break
+    try:
+        while True and game_server != None:
+            conn, addr = game_server.accept()
+            print(bold_green(f"Player join from {ip_host[addr[0]]}! Game start!"))
+            play_game(conn, game_type, player='server')
+            print("Game over!")
+            break
+    except BrokenPipeError as e:
+        print(bold_red("Connection closed by server."))
+    except Exception as e:
+        print(f"Error: {e}")
     conn.close()
     game_server.close()
     client.send("room close".encode())
-    print("Game over!")
+    
 
 def join_room(client):
     (host, port, game_type) = client.recv(1024).decode().strip().split(', ')
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn.connect((host, int(port)))
-    print(bold_green("Connected to the server! Game start!"))
-    play_game(conn,  game_type, player='client')
+    try:
+        print(bold_green("Connected to the server! Game start!"))
+        play_game(conn,  game_type, player='client')
+        print("Game over!")
+    except BrokenPipeError as e:
+        print(bold_red("Connection closed by server."))
+    except Exception as e:
+        print(f"Error: {e}")
     conn.close()
     client.send("room close".encode())
-    print("Game over!")
+    
 
 def play_game(conn, game_type, player):
     if game_type == "Battleship":
