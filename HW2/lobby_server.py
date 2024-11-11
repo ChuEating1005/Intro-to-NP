@@ -261,11 +261,15 @@ def create_room(conn, user, addr):
             room_created = True
         
     invited_conn.send(f"{addr[0]}, {port}, {game_type}".encode())
-    update_status(user, "playing")
-    update_status(invited_player, "playing")
+    if user in online_players:
+        update_status(user, "playing")
+    if invited_player in online_players:
+        update_status(invited_player, "playing")
     close = conn.recv(1024).decode().strip()
-    update_status(user, "idle")
-    update_status(invited_player, "idle")
+    if user in online_players:
+        update_status(user, "idle")
+    if invited_player in online_players:
+        update_status(invited_player, "idle")
     del game_rooms[room_name]
 
 def join_room(conn, user):

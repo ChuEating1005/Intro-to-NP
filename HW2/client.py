@@ -54,10 +54,8 @@ def create_room(client):
             play_game(conn, game_type, player='server')
             print("Game over!")
             break
-    except BrokenPipeError as e:
-        print(bold_red("Connection closed by server."))
     except Exception as e:
-        print(f"Error: {e}")
+        print(bold_red("Connection closed by server."))
     conn.close()
     game_server.close()
     client.send("room close".encode())
