@@ -431,7 +431,7 @@ def handle_client(conn, addr):
             if logined:
                 conn.send("\nChoose a option to do: \n1. List rooms\n2. Create room\n3. Join room\n4. Show invitations\n5. Logout\n6. Exit\nEnter: ".encode())
                 option = conn.recv(1024).decode().strip()
-                if option == "" or option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 6:
+                if option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 6:
                     command = "invalid"
                 else:
                     option = int(option)

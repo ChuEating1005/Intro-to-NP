@@ -131,7 +131,9 @@ def client_program():
                 if "Goodbye" in server_message:
                     break
                 
-                client_message = input()  # Take user input
+                client_message = ""
+                while client_message.strip() == "":
+                    client_message = input()  # Take user input
                 client.send(client_message.encode())
             time.sleep(0.1)
     except Exception as e:
