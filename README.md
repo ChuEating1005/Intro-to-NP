@@ -1,5 +1,6 @@
 # Intro-to-NP
 - Instructor: [Prof. Shyan-Ming Yuan 袁賢銘](https://dcslab.web.nycu.edu.tw/about/)
+- Semester: 2024 Fall
 
 ## Homework
 
