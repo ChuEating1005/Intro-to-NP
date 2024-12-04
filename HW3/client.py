@@ -91,6 +91,7 @@ def listen_for_broadcast(client, listen_event):
     """
     Listen for broadcast messages from server while main thread handles user input
     """
+    join_room = False
     while listen_event.is_set():
         try:
             # Only try to receive if there's data available
@@ -99,7 +100,7 @@ def listen_for_broadcast(client, listen_event):
                 message = client.recv(1024).decode()
                 if message:
                     if "join room" in message:
-                        join_room(client)
+                        join_room = True
                     else:
                         # Print the message without interfering with any current input prompt
                         print("\n" + message)
@@ -112,6 +113,8 @@ def listen_for_broadcast(client, listen_event):
             if listen_event.is_set():  # Only print error if we're not shutting down
                 print(f"\nError receiving broadcast: {e}")
             break
+    if join_room:
+        join_room(client)
 
 def receive_all_messages(client, timeout=0.1):
     """接收所有可用的消息並合併"""
