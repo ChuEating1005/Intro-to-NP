@@ -341,13 +341,13 @@ def private_room(conn, user, room_name="", game_type=""):
             if game_rooms[room_name]["guest"] == "":
                 conn.send((failed + bold_red("No player joined the room.\n") + br).encode())
                 continue
+            start_game(conn, user, room_name, game_type)
             return True
                 
         elif game_rooms[room_name]["status"] == "Playing":
-            print("here")
             # _ = conn.recv(1024).decode().strip()
             conn.send("join room".encode())
-            time.sleep(0.2)
+            time.sleep(0.3)
             conn.send(f"{game_rooms[room_name]['ip']}, {game_rooms[room_name]['port']}, {game_rooms[room_name]['type']}".encode())
             return True
 
@@ -399,11 +399,14 @@ def create_room(conn, user, addr):
         invited_conn, _, _ = online_players[invited_player]
         conn.send(f"{br}Player joined! Starting the game in room: {room_name}\n{br}".encode())
     else:
-        if not private_room(conn, user, room_name, game_type):
-            return
-        invited_player = game_rooms[room_name]["guest"]
-        invited_conn = online_players[invited_player][0]
+        private_room(conn, user, room_name, game_type)
 
+        
+
+def start_game(conn, user, room_name, game_type):
+    addr = online_players[user][1]
+    invited_player = game_rooms[room_name]["guest"]
+    invited_conn = online_players[invited_player][0]
     room_created = False
     while not room_created:
         conn.send("\nPlease enter the port number to bind (10000 - 65535): ".encode())
