@@ -69,6 +69,7 @@ def create_room(client):
 def join_room(client):
     print(bold_green("Joining room..."))
     (host, port, game_type) = client.recv(1024).decode().strip().split(', ')
+    print(host, port, game_type)
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn.connect((host, int(port)))
     try:
@@ -169,6 +170,7 @@ def client_program():
             # Set blocking mode for main communication
             client.setblocking(1)
             server_message = receive_all_messages(client)
+            print(server_message)
             if not server_message:
                 continue
             
