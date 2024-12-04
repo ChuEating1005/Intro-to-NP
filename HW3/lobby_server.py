@@ -390,6 +390,8 @@ def create_room(conn, user, addr):
     else:
         if not private_room(conn, user, room_name, game_type):
             return
+        invited_player = game_rooms[room_name]["guest"]
+        invited_conn = online_players[invited_player][0]
 
     room_created = False
     while not room_created:

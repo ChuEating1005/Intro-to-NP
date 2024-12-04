@@ -198,6 +198,10 @@ def client_program():
                     broadcast_thread.join(timeout=0.1)
 
                 client_message = input()
+                # Handle empty input
+                while not client_message.strip():
+                    print("Input cannot be empty. Please try again: ", end="")
+                    client_message = input()
                 
                 # Stop the broadcast thread after input is received
                 listen_event.clear()
