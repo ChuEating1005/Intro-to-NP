@@ -38,7 +38,9 @@ def create_room(client):
 
     try:
         host = host_ips[socket.gethostname()]
-        (port, game_type) = client.recv(1024).decode().strip().split(', ')
+        msg = client.recv(1024).decode().strip()
+        print(msg)
+        (port, game_type) = msg.split(', ')
         port = int(port)
         game_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         game_server.bind((host, port))
