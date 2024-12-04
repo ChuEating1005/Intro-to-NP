@@ -66,9 +66,8 @@ def create_room(client):
     client.send("room close".encode())
     
 
-def join_room(client, listen_event):
-    listen_event.clear()
-    print(bold_green("Joining room..."))
+def join_room(client):
+    # print(bold_green("Joining room..."))
     (host, port, game_type) = client.recv(1024).decode().strip().split(', ')
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn.connect((host, int(port)))
@@ -100,10 +99,13 @@ def listen_for_broadcast(client, listen_event):
             try:
                 message = client.recv(1024).decode()
                 if message:
-                    if "join room" in message:
-                        client.setblocking(1)
-                        should_join_room = True
+                    if "break input" in message:
+                        print("Status updated. Please enter any key to continue.")
                         break
+                    # if "join room" in message:
+                    #     client.setblocking(1)
+                    #     should_join_room = True
+                    #     break
                     else:
                         # Print the message without interfering with any current input prompt
                         print("\n" + message)
@@ -116,8 +118,8 @@ def listen_for_broadcast(client, listen_event):
             if listen_event.is_set():  # Only print error if we're not shutting down
                 print(f"\nError receiving broadcast: {e}")
             break
-    if should_join_room:
-        join_room(client, listen_event)
+    # if should_join_room:
+    #     join_room(client, listen_event)
 
 def receive_all_messages(client, timeout=0.1):
     """接收所有可用的消息並合併"""
@@ -206,9 +208,9 @@ def client_program():
 
                 client_message = input()
                 # Handle empty input
-                while not client_message.strip():
-                    print("Input cannot be empty. Please try again: ", end="")
-                    client_message = input()
+                if not client_message.strip():
+                    # print("Input cannot be empty. Please try again: ", end="")
+                    client_message = "invalid"
                 
                 # Stop the broadcast thread after input is received
                 listen_event.clear()

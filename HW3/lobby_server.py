@@ -338,6 +338,7 @@ def private_room(conn, user, room_name="", game_type=""):
                 continue
             new_owner = game_rooms[room_name]["guest"]
             invited_conn = online_players[new_owner][0]
+            invited_conn.send("break input".encode())
             invited_conn.send("join room".encode())
             return True        
         else:
