@@ -342,7 +342,7 @@ def private_room(conn, user, room_name="", game_type=""):
                 conn.send((failed + bold_red("No player joined the room.\n") + br).encode())
                 continue
             start_game(conn, user, room_name)
-            return True
+            return False
                 
         elif game_rooms[room_name]["status"] == "Playing":
             # _ = conn.recv(1024).decode().strip()
