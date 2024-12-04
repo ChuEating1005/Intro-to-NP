@@ -140,8 +140,8 @@ def client_program():
     # Initialize broadcast_thread variable
     broadcast_thread = None
 
-    # host = "140.113.235.151"
-    host = "127.0.0.1"
+    host = "140.113.235.151"
+    # host = "127.0.0.1"
     while True:
         try:
             port = int(input("Enter server port: "))

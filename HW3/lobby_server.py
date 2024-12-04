@@ -685,8 +685,8 @@ def start_server():
     
     # Get the host IP
     try:
-        # host = host_ips[socket.gethostname()]
-        host = "127.0.0.1"
+        host = host_ips[socket.gethostname()]
+        # host = "127.0.0.1"
     except KeyError:
         print("Error: Hostname not found in the host_ips dictionary.")
         sys.exit(1)
