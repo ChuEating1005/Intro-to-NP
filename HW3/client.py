@@ -67,7 +67,7 @@ def create_room(client):
     
 
 def join_room(client):
-    # print(bold_green("Joining room..."))
+    print(bold_green("Joining room..."))
     (host, port, game_type) = client.recv(1024).decode().strip().split(', ')
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn.connect((host, int(port)))
