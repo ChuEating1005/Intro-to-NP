@@ -246,12 +246,8 @@ def private_room(conn, user, room_name="", game_type=""):
     # )
     # monitor_thread.start()
     while True:
-        if game_rooms[room_name]["status"] == "Playing":
-            conn.send("break input".encode())
-            _ = conn.recv(1024).decode().strip()
-            conn.send("join room".encode())
-            conn.send(f"{game_rooms[room_name]['ip']}, {game_rooms[room_name]['port']}, {game_rooms[room_name]['type']}".encode())
-            return True
+        # print(game_rooms[room_name]["status"])
+        
         if user == game_rooms[room_name]["owner"]:
             role = "host"
         elif user == game_rooms[room_name]["guest"]:
@@ -265,19 +261,20 @@ def private_room(conn, user, room_name="", game_type=""):
         # if connect_event.is_set():
         #     break
         if role == "host":
-            while option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 4:
+            if option.isspace() or not option.isdigit() or int(option) < 1 or int(option) > 4:
                 command = "invalid"
-                conn.send("\nChoose a option to do: \n1. Send invitation\n2. List idle users\n3. Back to lobby\n4. Start game\nEnter: ".encode())
-                option = conn.recv(1024).decode().strip()
+                # conn.send("\nChoose a option to do: \n1. Send invitation\n2. List idle users\n3. Back to lobby\n4. Start game\nEnter: ".encode())
+                # option = conn.recv(1024).decode().strip()
+            else:
+                option = int(option)
+                command = private_cmd[option]
         else:
-            while option.isspace() or not option.isdigit() or int(option) != 1:
+            if option.isspace() or not option.isdigit() or int(option) != 1:
                 command = "invalid"
-                conn.send("\nChoose a option to do: \n1. Back to lobby\nEnter: ".encode())
-                option = conn.recv(1024).decode().strip()
-        option = int(option)
-        if role == "guest":
-            option += 2
-        command = private_cmd[option]
+            else:
+                option = int(option) + 2
+                command = private_cmd[option]
+       
         # List idle players
         if command == "list_idle":
             player_list = "Idle users:\n"
@@ -344,8 +341,14 @@ def private_room(conn, user, room_name="", game_type=""):
             if game_rooms[room_name]["guest"] == "":
                 conn.send((failed + bold_red("No player joined the room.\n") + br).encode())
                 continue
-            return True        
-        
+            return True
+                
+        elif game_rooms[room_name]["status"] == "Playing":
+            _ = conn.recv(1024).decode().strip()
+            conn.send("join room".encode())
+            conn.send(f"{game_rooms[room_name]['ip']}, {game_rooms[room_name]['port']}, {game_rooms[room_name]['type']}".encode())
+            return True
+
         else:
             invalid(conn)
     # monitor_thread.join()
@@ -421,6 +424,8 @@ def create_room(conn, user, addr):
         game_rooms[room_name]["status"] = "Playing"
         game_rooms[room_name]["ip"] = addr[0]
         game_rooms[room_name]["port"] = port
+
+    invited_conn.send("break input".encode())
 
     if user in online_players:
         update_status(user, "playing")
