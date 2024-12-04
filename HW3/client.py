@@ -101,6 +101,7 @@ def listen_for_broadcast(client, listen_event):
                 message = client.recv(1024).decode()
                 if message:
                     if "join room" in message:
+                        client.setblocking(1)
                         should_join_room = True
                         break
                     else:
