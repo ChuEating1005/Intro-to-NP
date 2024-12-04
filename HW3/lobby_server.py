@@ -246,6 +246,12 @@ def private_room(conn, user, room_name="", game_type=""):
     # )
     # monitor_thread.start()
     while True:
+        if game_rooms[room_name]["status"] == "Playing":
+            conn.send("break input".encode())
+            _ = conn.recv(1024).decode().strip()
+            conn.send("join room".encode())
+            conn.send(f"{game_rooms[room_name]['ip']}, {game_rooms[room_name]['port']}, {game_rooms[room_name]['type']}".encode())
+            return True
         if user == game_rooms[room_name]["owner"]:
             role = "host"
         elif user == game_rooms[room_name]["guest"]:
@@ -340,12 +346,6 @@ def private_room(conn, user, room_name="", game_type=""):
                 continue
             return True        
         
-        elif game_rooms[room_name]["status"] == "Playing":
-            conn.send("break input".encode())
-            _ = conn.recv(1024).decode().strip()
-            conn.send("join room".encode())
-            conn.send(f"{game_rooms[room_name]['ip']}, {game_rooms[room_name]['port']}, {game_rooms[room_name]['type']}".encode())
-            return True
         else:
             invalid(conn)
     # monitor_thread.join()
