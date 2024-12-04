@@ -344,7 +344,8 @@ def private_room(conn, user, room_name="", game_type=""):
             return True
                 
         elif game_rooms[room_name]["status"] == "Playing":
-            _ = conn.recv(1024).decode().strip()
+            print("here")
+            # _ = conn.recv(1024).decode().strip()
             conn.send("join room".encode())
             conn.send(f"{game_rooms[room_name]['ip']}, {game_rooms[room_name]['port']}, {game_rooms[room_name]['type']}".encode())
             return True
