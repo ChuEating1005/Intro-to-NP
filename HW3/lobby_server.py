@@ -333,11 +333,15 @@ def private_room(conn, user, room_name="", game_type=""):
             return False
         
         elif command == "start_game":
+            with lock:
+                game_rooms[room_name]["status"] = "Playing"
             if game_rooms[room_name]["guest"] == "":
                 conn.send((failed + bold_red("No player joined the room.\n") + br).encode())
                 continue
-            
             return True        
+        
+        elif game_rooms[room_name]["status"] == "Playing":
+            return True
         else:
             invalid(conn)
     # monitor_thread.join()
@@ -525,7 +529,7 @@ def show_invitations(conn, user):
             if response == 'y':
                 with lock:  
                     game_rooms[room_name]["guest"] = user
-                    game_rooms[room_name]["status"] = "Playing"
+                    game_rooms[room_name]["status"] = "Full"
                 # Attempt to join the room
                 conn.send((success + bold_green(f"Joining room '{room_name}' invited by {owner}.\n") + br).encode())
                 # conn.send("join room".encode())
