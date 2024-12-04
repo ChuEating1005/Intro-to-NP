@@ -72,7 +72,9 @@ game_rooms = {
         "public": True/False, 
         "status": "waiting/playing", 
         "owner": "username", 
-        "guest": "username"
+        "guest": "username",
+        "ip": "ip",
+        "port": "port"
     }
 }
 """
@@ -333,14 +335,16 @@ def private_room(conn, user, room_name="", game_type=""):
             return False
         
         elif command == "start_game":
-            with lock:
-                game_rooms[room_name]["status"] = "Playing"
             if game_rooms[room_name]["guest"] == "":
                 conn.send((failed + bold_red("No player joined the room.\n") + br).encode())
                 continue
             return True        
         
         elif game_rooms[room_name]["status"] == "Playing":
+            conn.send("break input".encode())
+            _ = conn.recv(1024).decode().strip()
+            conn.send("join room".encode())
+            conn.send(f"{game_rooms[room_name]['ip']}, {game_rooms[room_name]['port']}, {game_rooms[room_name]['type']}".encode())
             return True
         else:
             invalid(conn)
@@ -413,11 +417,11 @@ def create_room(conn, user, addr):
         respond = conn.recv(1024).decode().strip()
         if respond == "room created successfully":
             room_created = True
-    
+    with lock:
+        game_rooms[room_name]["status"] = "Playing"
+        game_rooms[room_name]["ip"] = addr[0]
+        game_rooms[room_name]["port"] = port
 
-    invited_conn.send("break input".encode())
-    invited_conn.send("join room".encode())
-    invited_conn.send(f"{addr[0]}, {port}, {game_type}".encode())
     if user in online_players:
         update_status(user, "playing")
     if invited_player in online_players:
