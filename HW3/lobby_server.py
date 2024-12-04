@@ -341,7 +341,7 @@ def private_room(conn, user, room_name="", game_type=""):
             if game_rooms[room_name]["guest"] == "":
                 conn.send((failed + bold_red("No player joined the room.\n") + br).encode())
                 continue
-            start_game(conn, user, room_name, game_type)
+            start_game(conn, user, room_name)
             return True
                 
         elif game_rooms[room_name]["status"] == "Playing":
@@ -403,8 +403,9 @@ def create_room(conn, user, addr):
 
         
 
-def start_game(conn, user, room_name, game_type):
+def start_game(conn, user, room_name):
     addr = online_players[user][1]
+    game_type = game_rooms[room_name]["type"]
     invited_player = game_rooms[room_name]["guest"]
     invited_conn = online_players[invited_player][0]
     room_created = False
