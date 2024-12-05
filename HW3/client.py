@@ -3,19 +3,22 @@ import time
 import signal
 import sys
 from getpass import getpass 
-import battleship
-import gomoku
 import threading
 import select
 import os
+import importlib.util
+from utils.game_dev import send_file_to_server, download_game
+
 host_ips = {"linux1": "140.113.235.151", 
             "linux3": "140.113.235.153",
             "linux2": "140.113.235.152",
-            "linux4": "140.113.235.154"}
+            "linux4": "140.113.235.154",
+            "itingchu": "127.0.0.1"}
 ip_host = {"140.113.235.151": "linux1",
             "140.113.235.152": "linux2",
             "140.113.235.153": "linux3",
-            "140.113.235.154": "linux4"}
+            "140.113.235.154": "linux4",
+            "127.0.0.1": "itingchu"}
 
 def signal_handler(sig, frame):
     """
@@ -38,9 +41,7 @@ def create_room(client):
 
     try:
         host = host_ips[socket.gethostname()]
-        msg = client.recv(1024).decode().strip()
-        print(msg)
-        (port, game_type) = msg.split(', ')
+        (port, game_type) = client.recv(1024).decode().strip().split(', ')
         port = int(port)
         game_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         game_server.bind((host, port))
@@ -83,10 +84,27 @@ def join_room(client):
     
 
 def play_game(conn, game_type, player):
-    if game_type == "Battleship":
-        battleship.start_game(conn, player)
-    else:
-        gomoku.start_game(conn, player)
+    # 構建遊戲檔案的路徑
+    game_file_path = f"{game_type}.py"
+    
+    # 檢查遊戲檔案是否存在
+    if not os.path.isfile(game_file_path):
+        print(f"Game file for '{game_type}' not found.")
+        return
+    
+    # 動態導入遊戲模組
+    spec = importlib.util.spec_from_file_location(game_type, game_file_path)
+    game_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(game_module)
+    
+    # 開始遊戲
+    try:
+        game_module.start_game(conn, player)
+    except AttributeError:
+        print(f"The game '{game_type}' does not have a 'start_game' function.")
+    except Exception as e:
+        print(f"Error during game execution: {e}")
+        print("Returning to lobby...")
 
 def listen_for_broadcast(client, listen_event):
     """
@@ -101,7 +119,7 @@ def listen_for_broadcast(client, listen_event):
                 message = client.recv(1024).decode()
                 if message:
                     if "break input" in message:
-                        print("Status updated. Please enter any key to continue.")
+                        print(bold_blue("\nStatus updated. Please enter any key to continue."))
                         break
                     # if "join room" in message:
                     #     client.setblocking(1)
@@ -150,8 +168,7 @@ def client_program():
     # Initialize broadcast_thread variable
     broadcast_thread = None
 
-    host = "140.113.235.151"
-    # host = "127.0.0.1"
+    host = host_ips[socket.gethostname()]
     while True:
         try:
             port = int(input("Enter server port: "))
@@ -177,25 +194,27 @@ def client_program():
                 print("Enter password: ", end="", flush=True)
                 password = getpass("")
                 client.send(password.encode())
-            elif "wait for join" in server_message:
-                print(bold_green("Public room create successfully! Waiting for other players to join...\n"))
-                msg = client.recv(1024).decode()
-                print(msg, end="")
-                select_port = client.recv(1024).decode()
-                print(select_port, end="")
-                client_message = input()
-                client.send(client_message.encode())
             elif "create room" in server_message:
                 create_room(client)
             elif "join room" in server_message:
                 join_room(client)
+            elif "upload_game" in server_message:
+                file_name = server_message.split(", ")[1]
+                print(f"Uploading {file_name} to server...")
+                send_file_to_server(client, file_name)
+            elif "check_local_game" in server_message:
+                file_name = server_message.split(", ")[1] + ".py"
+                if os.path.isfile(file_name):
+                    client.send("already_exist".encode())
+                else:
+                    client.send("not_exist".encode())
+                    download_game(client, file_name)
             elif "Invitation sent. Waiting for acception..." in server_message:
                 respond = client.recv(1024).decode()
                 client.send(respond.encode())
             else:
                 print(server_message, end="")
                 if "Goodbye" in server_message:
-                    
                     break
                 
                 listen_event.set()
